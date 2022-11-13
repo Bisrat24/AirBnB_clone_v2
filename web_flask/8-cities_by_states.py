@@ -1,35 +1,25 @@
 #!/usr/bin/python3
 """
-Script that starts a Flask web application
-/cities_by_states: display a HTML page: (inside the tag BODY)
+starts a Flask web application
 """
-from flask import Flask, render_template
-from models import storage, State
 
+from flask import Flask, render_template
+from models import *
+from models import storage
 app = Flask(__name__)
-app.url_map.strict_slashes = False
+
+
+@app.route('/cities_by_states', strict_slashes=False)
+def cities_by_states():
+    """display the states and cities listed in alphabetical order"""
+    states = storage.all("State").values()
+    return render_template('8-cities_by_states.html', states=states)
 
 
 @app.teardown_appcontext
-def close_context(exception):
+def teardown_db(exception):
+    """closes the storage on teardown"""
     storage.close()
 
-
-@app.route('/cities_by_states')
-def cities_states_route():
-    # route that fetches all cities in a stage from the sotrage engine
-
-    states = storage.all(State)
-    all_states = []
-
-    for state in states.values():
-        cities = state.cities
-        cities_list = list(filter(lambda x: x.state_id == state.id, cities))
-        city_data = list(map(lambda x: [x.id, x.name], cities_list))
-        all_states.append([state.id, state.name, city_data])
-
-    return render_template('8-cities_by_states.html', states=all_states)
-
-
-if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000)
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port='5000')
